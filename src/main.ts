@@ -327,6 +327,3 @@ if (canvas) {
     planner.placeAt(hit);
   });
 }
-
-// Später, wenn ein IFC-Modell als Prototyp dienen soll (z. B. nach dem Laden):
-// planner.setPlaceablePrototype(myFragmentGroup /* THREE.Object3D */);
