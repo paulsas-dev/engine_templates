@@ -1,2 +1,1 @@
-export * from "./CustomComponent";
 export * from "./ProductionPlanner";

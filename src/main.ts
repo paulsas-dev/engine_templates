@@ -6,6 +6,9 @@ import * as TEMPLATES from "./ui-templates";
 import { appIcons, CONTENT_GRID_ID } from "./globals";
 import { viewportSettingsTemplate } from "./ui-templates/buttons/viewport-settings";
 
+// ✅ NEU: ProductionPlanner import
+import { ProductionPlanner } from "./bim-components";
+
 BUI.Manager.init();
 
 // Components Setup
@@ -286,3 +289,44 @@ app.layouts = {
 };
 
 app.layout = "App";
+
+// -----------------------------------------------------------------------
+// ✅ NEU: Production Planner – Tisch, Raycast-Placement & Clamping (Punkt 1)
+// -----------------------------------------------------------------------
+const planner = new ProductionPlanner(world, {
+  tableSize: { width: 2.0, depth: 1.0, height: 0.75, thickness: 0.05 },
+  snap: 0.05, // 5 cm Raster (optional). Für kein Snapping: snap: null
+});
+planner.mount();
+
+// Canvas ermitteln (robust für verschiedene Renderer-Versionen)
+const canvas: HTMLCanvasElement | null =
+  (world.renderer as any)?.canvas ??
+  (world.renderer as any)?.three?.domElement ??
+  (document.querySelector("bim-viewport canvas") as HTMLCanvasElement) ??
+  (document.querySelector("canvas") as HTMLCanvasElement) ??
+  null;
+
+// Maus in NDC umrechnen
+const pointerNdc = new THREE.Vector2();
+function toNdc(ev: MouseEvent, el: HTMLElement) {
+  const rect = el.getBoundingClientRect();
+  const x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+  const y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+  pointerNdc.set(x, y);
+}
+
+// Linksklick → auf Tisch platzieren (Demo-Würfel, bis ein IFC-Prototyp gesetzt wird)
+if (canvas) {
+  canvas.addEventListener("pointerdown", (ev: PointerEvent) => {
+    if (ev.button !== 0) return;
+    toNdc(ev as unknown as MouseEvent, canvas);
+    const camera = (world.camera as any).three ?? world.camera.threePersp;
+    const hit = planner.intersectTable(pointerNdc, camera);
+    if (!hit) return;
+    planner.placeAt(hit);
+  });
+}
+
+// Später, wenn ein IFC-Modell als Prototyp dienen soll (z. B. nach dem Laden):
+// planner.setPlaceablePrototype(myFragmentGroup /* THREE.Object3D */);

@@ -40,6 +40,7 @@ export const contentGridTemplate: BUI.StatefullComponent<ContentGridState> = (
     if (!e) return;
     const grid = e as BUI.Grid<ContentGridLayouts, ContentGridElements>;
 
+    /* Hier werden die einzelnen Komponenten in der HTML-View definiert. */
     grid.elements = {
       models: {
         template: TEMPLATES.modelsPanelTemplate,
